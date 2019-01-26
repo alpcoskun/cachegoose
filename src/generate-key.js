@@ -3,7 +3,7 @@
 const { createHash } = require('crypto');
 const stringify = require('fast-safe-stringify');
 
-const jsosort = function(obj) {
+function jsosort(obj) {
   let result = {};
   Object.keys(obj)
     .sort()
@@ -21,7 +21,12 @@ const replacer = function(key, val) {
   return val instanceof RegExp ? String(val) : val;
 };
 
-module.exports = function init(obj) {
+
+/**
+ * @param {object} obj
+ * @returns {string} generated object hash
+ */
+module.exports = function(obj) {
   return createHash('md5')
     .update(stringify(jsosort(obj), replacer))
     .digest('hex');

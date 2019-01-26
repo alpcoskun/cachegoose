@@ -3,6 +3,10 @@
 let hasRun = false;
 let cache;
 
+/**
+ * @param {object} mongoose mongoose Object
+ * @param {object} [cacheOptions] redis config(leave blank for memory caching)
+ */
 module.exports = function init(mongoose, cacheOptions) {
   if (typeof mongoose.Model.hydrate !== 'function')
     throw new Error(
@@ -17,7 +21,10 @@ module.exports = function init(mongoose, cacheOptions) {
   require('./extend-aggregate')(mongoose, cache);
 };
 
+/**
+ * @param {object} mongoose
+ * @param {object} [cacheOptions]
+ */
 module.exports.clearCache = function(cb = function() {}) {
   cache.clear(cb);
-  return;
 };

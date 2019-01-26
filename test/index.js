@@ -3,7 +3,7 @@
 require('should');
 
 const mongoose = require('mongoose');
-const cachegoose = require('../out');
+const cachegoose = require('../src');
 const Schema = mongoose.Schema;
 
 let RecordSchema;
@@ -43,6 +43,15 @@ describe('cachegoose', () => {
     Record.remove(() => {
       cachegoose.clearCache(done);
     });
+  });
+
+  it('should throw an error if the hydrate method exists', () => {
+    const mongoose = { Model: { hydrate: undefined } };
+    (() => cachegoose(mongoose)).should.throw();
+  });
+
+  it('should not an error if the hydrage method exists', () => {
+    (() => cachegoose(mongoose)).should.not.throw();
   });
 
   it('should have cache method after initialization', () => {
@@ -249,37 +258,6 @@ describe('cachegoose', () => {
     });
   });
 
-  it('should cache aggregate queries that use Promises', async () => {
-    const [res] = await aggregate(60);
-    res.total.should.equal(45);
-
-    await generate(10);
-
-    const [cached] = await aggregate(60);
-    cached.total.should.equal(45);
-  });
-
-  it('should cache a count query', async () => {
-    const res = await count(60);
-    res.should.equal(10);
-
-    await generate(10);
-
-    const cached = await count(60);
-    cached.should.equal(10);
-  });
-
-  it('should cache a count query with zero results', async () => {
-    await Record.remove();
-
-    const res = await count(60);
-    res.should.equal(0);
-
-    await generate(2);
-    const cached = await count(60);
-
-    cached.should.equal(0);
-  });
   it('should cache a countDocuments query', async () => {
     const res = await countDocuments(60);
     res.should.equal(10);
@@ -412,18 +390,14 @@ function getAllSorted(sortObj) {
     .exec();
 }
 
-function count(ttl, cb) {
-  return Record.find({})
-    .cache(ttl)
-    .count()
-    .exec(cb);
-}
+
 function countDocuments(ttl, cb) {
   return Record.find({})
     .cache(ttl)
     .countDocuments()
     .exec(cb);
 }
+
 function estimatedDocumentCount(ttl, cb) {
   return Record.find({})
     .cache(ttl)

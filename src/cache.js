@@ -2,6 +2,9 @@
 
 const noop = function() {};
 
+/**
+ * @param {object} [options]
+ */
 function Cache(options) {
   if (!options) {
     const CachemanMem = require('cacheman-memory');
@@ -25,6 +28,9 @@ Cache.prototype.clear = function(cb = noop) {
   return this._cache.clear(cb);
 };
 
+/**
+ * @param {object} [options]
+ */
 module.exports = function(options) {
   return new Cache(options);
 };
