@@ -13,7 +13,6 @@ module.exports = function(mongoose, cache) {
       extend(res.constructor);
       hasBeenExtended = true;
     }
-
     return res;
   };
 
@@ -49,14 +48,8 @@ module.exports = function(mongoose, cache) {
       });
     };
 
-    Aggregate.prototype.cache = function(ttl = 60, customKey = '') {
-      if (typeof ttl === 'string') {
-        customKey = ttl;
-        ttl = 60;
-      }
-
+    Aggregate.prototype.cache = function(ttl = 100) {
       this._ttl = ttl;
-      this._key = customKey;
       return this;
     };
 

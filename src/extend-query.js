@@ -5,7 +5,7 @@ const generateKey = require('./generate-key');
 module.exports = function(mongoose, cache) {
   const exec = mongoose.Query.prototype.exec;
 
-  mongoose.Query.prototype.exec = function(op, callback = function() { }) {
+  mongoose.Query.prototype.exec = function(op, callback = function() {}) {
     if (!this.hasOwnProperty('_ttl')) return exec.apply(this, arguments);
 
     if (typeof op === 'function') {
@@ -15,14 +15,19 @@ module.exports = function(mongoose, cache) {
       this.op = op;
     }
 
-    const key = this._key || this.getCacheKey();
+    const key = this.getCacheKey();
     const ttl = this._ttl;
-    const isCount = ['count', 'countDocuments', 'estimatedDocumentCount'].includes(this.op);
+    const isCount = [
+      'count',
+      'countDocuments',
+      'estimatedDocumentCount'
+    ].includes(this.op);
     const isLean = this._mongooseOptions.lean;
     const model = this.model.modelName;
 
     return new Promise((resolve, reject) => {
-      cache.get(key, (err, cachedResults) => { //eslint-disable-line handle-callback-err
+      cache.get(key, (err, cachedResults) => {
+        //eslint-disable-line handle-callback-err
         if (cachedResults != null) {
           if (isCount) {
             callback(null, cachedResults);
@@ -31,9 +36,9 @@ module.exports = function(mongoose, cache) {
 
           if (!isLean) {
             const constructor = mongoose.model(model);
-            cachedResults = Array.isArray(cachedResults) ?
-              cachedResults.map(hydrateModel(constructor)) :
-              hydrateModel(constructor)(cachedResults);
+            cachedResults = Array.isArray(cachedResults)
+              ? cachedResults.map(hydrateModel(constructor))
+              : hydrateModel(constructor)(cachedResults);
           }
 
           callback(null, cachedResults);
@@ -42,13 +47,13 @@ module.exports = function(mongoose, cache) {
 
         exec
           .call(this)
-          .then((results) => {
+          .then(results => {
             cache.set(key, results, ttl, () => {
               callback(null, results);
               return resolve(results);
             });
           })
-          .catch((err) => {
+          .catch(err => {
             callback(err);
             reject(err);
           });
@@ -56,14 +61,8 @@ module.exports = function(mongoose, cache) {
     });
   };
 
-  mongoose.Query.prototype.cache = function(ttl = 60, customKey = '') {
-    if (typeof ttl === 'string') {
-      customKey = ttl;
-      ttl = 60;
-    }
-
+  mongoose.Query.prototype.cache = function(ttl = 100) {
     this._ttl = ttl;
-    this._key = customKey;
     return this;
   };
 
@@ -86,7 +85,7 @@ module.exports = function(mongoose, cache) {
 };
 
 function hydrateModel(constructor) {
-  return (data) => {
+  return function(data) {
     return constructor.hydrate(data);
   };
 }
