@@ -9,7 +9,11 @@ module.exports = function(mongoose, cache) {
   mongoose.Model.aggregate = function() {
     const res = aggregate.apply(this, arguments);
 
-    if (!hasBeenExtended && res.constructor && res.constructor.name === 'Aggregate') {
+    if (
+      !hasBeenExtended &&
+      res.constructor &&
+      res.constructor.name === 'Aggregate'
+    ) {
       extend(res.constructor);
       hasBeenExtended = true;
     }
@@ -19,14 +23,15 @@ module.exports = function(mongoose, cache) {
   function extend(Aggregate) {
     const exec = Aggregate.prototype.exec;
 
-    Aggregate.prototype.exec = function(callback = function() { }) {
+    Aggregate.prototype.exec = function(callback = function() {}) {
       if (!this.hasOwnProperty('_ttl')) return exec.apply(this, arguments);
 
       const key = this._key || this.getCacheKey();
       const ttl = this._ttl;
 
       return new Promise((resolve, reject) => {
-        cache.get(key, (err, cachedResults) => { //eslint-disable-line handle-callback-err
+        cache.get(key, (err, cachedResults) => {
+          //eslint-disable-line handle-callback-err
           if (cachedResults) {
             callback(null, cachedResults);
             return resolve(cachedResults);
@@ -34,13 +39,13 @@ module.exports = function(mongoose, cache) {
 
           exec
             .call(this)
-            .then((results) => {
+            .then(results => {
               cache.set(key, results, ttl, () => {
                 callback(null, results);
                 resolve(results);
               });
             })
-            .catch((err) => {
+            .catch(err => {
               callback(err);
               reject(err);
             });

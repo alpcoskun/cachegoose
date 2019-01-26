@@ -1,10 +1,15 @@
 'use strict';
 
-const Cacheman = require('cacheman');
-const noop = () => {};
+const noop = function() {};
 
 function Cache(options) {
-  this._cache = new Cacheman('cachegoose-cache', options);
+  if (!options) {
+    const CachemanMem = require('cacheman-memory');
+    this._cache = new CachemanMem(options);
+  } else {
+    const CachemanRedis = require('cacheman-redis');
+    this._cache = new CachemanRedis(options);
+  }
 }
 
 Cache.prototype.get = function(key, cb = noop) {
@@ -14,10 +19,6 @@ Cache.prototype.get = function(key, cb = noop) {
 Cache.prototype.set = function(key, value, ttl, cb = noop) {
   if (ttl === 0) ttl = -1;
   return this._cache.set(key, value, ttl, cb);
-};
-
-Cache.prototype.del = function(key, cb = noop) {
-  return this._cache.del(key, cb);
 };
 
 Cache.prototype.clear = function(cb = noop) {

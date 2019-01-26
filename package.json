@@ -1,17 +1,15 @@
 {
   "name": "cachegoose",
-  "version": "8.0.0",
+  "version": "8.1.0",
   "description": "Mongoose caching that actually works.",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "brace-expansion": "^1.1.8",
-    "cacheman": "^2.2.1",
+    "cacheman-memory": "^1.1.0",
     "cacheman-redis": "^1.1.2",
-    "jsosort": "0.0.0",
-    "sha1": "^1.1.1"
+    "fast-safe-stringify": "^2.0.6"
   },
   "peerDependencies": {
     "mongoose": "^5.0.1"
@@ -32,7 +30,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/boblauer/cachegoose.git"
+    "url": "https://github.com/alpcoskun/cachegoose.git"
   },
   "keywords": [
     "cache",
@@ -43,10 +41,10 @@
     "store",
     "ttl"
   ],
-  "author": "Bob Lauer <rlauer@gmail.com>",
+  "author": "Nisan Coşkun <dev@alpcoskun.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/boblauer/cachegoose/issues"
+    "url": "https://github.com/alpcoskun/cachegoose/issues"
   },
-  "homepage": "https://github.com/boblauer/cachegoose"
+  "homepage": "https://github.com/alpcoskun/cachegoose"
 }

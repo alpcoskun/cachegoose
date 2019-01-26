@@ -3,8 +3,11 @@
 let hasRun = false;
 let cache;
 
-module.exports = function init(mongoose, cacheOptions = {}) {
-  if (typeof mongoose.Model.hydrate !== 'function') throw new Error('Cachegoose is only compatible with versions of mongoose that implement the `model.hydrate` method');
+module.exports = function init(mongoose, cacheOptions) {
+  if (typeof mongoose.Model.hydrate !== 'function')
+    throw new Error(
+      'Cachegoose is only compatible with versions of mongoose that implement the `model.hydrate` method'
+    );
   if (hasRun) return;
   hasRun = true;
 
@@ -14,10 +17,7 @@ module.exports = function init(mongoose, cacheOptions = {}) {
   require('./extend-aggregate')(mongoose, cache);
 };
 
-module.exports.clearCache = function(customKey, cb = () => { }) {
-  if (!customKey) {
-    cache.clear(cb);
-    return;
-  }
-  cache.del(customKey, cb);
+module.exports.clearCache = function(cb = function() {}) {
+  cache.clear(cb);
+  return;
 };

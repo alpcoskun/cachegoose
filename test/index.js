@@ -11,10 +11,13 @@ let Record;
 let db;
 
 describe('cachegoose', () => {
-  before((done) => {
+  before(done => {
     cachegoose(mongoose);
 
-    mongoose.connect('mongodb://127.0.0.1/mongoose-cachegoose-testing');
+    mongoose.connect(
+      'mongodb://localhost/cachegoose-test',
+      { useNewUrlParser: true }
+    );
     db = mongoose.connection;
 
     db.on('error', done);
@@ -36,26 +39,17 @@ describe('cachegoose', () => {
     return generate(10);
   });
 
-  afterEach((done) => {
+  afterEach(done => {
     Record.remove(() => {
-      cachegoose.clearCache(null, done);
+      cachegoose.clearCache(done);
     });
-  });
-
-  it('should throw an error if the hydrate method exists', () => {
-    const mongoose = { Model: { hydrate: undefined } };
-    (() => cachegoose(mongoose)).should.throw();
-  });
-
-  it('should not an error if the hydrage method exists', () => {
-    (() => cachegoose(mongoose)).should.not.throw();
   });
 
   it('should have cache method after initialization', () => {
     Record.find({}).cache.should.be.a.Function;
   });
 
-  it('should cache a simple query that uses callbacks', (done) => {
+  it('should cache a simple query that uses callbacks', done => {
     getAll(60, (err, res) => {
       if (err) return done(err);
 
@@ -90,7 +84,7 @@ describe('cachegoose', () => {
     nonCachedResponse.length.should.equal(20);
   });
 
-  it('should return a Mongoose model from cached and non-cached results', (done) => {
+  it('should return a Mongoose model from cached and non-cached results', done => {
     getAll(60, (err, res) => {
       if (err) return done(err);
 
@@ -214,13 +208,18 @@ describe('cachegoose', () => {
 
     await generate(10);
 
-    await Promise.all(new Array(20).join('.').split('').map(() => getAll(60)));
+    await Promise.all(
+      new Array(20)
+        .join('.')
+        .split('')
+        .map(() => getAll(60))
+    );
 
     const cached = await getAll(60);
     cached.length.should.equal(10);
   });
 
-  it('should expire the cache', (done) => {
+  it('should expire the cache', done => {
     getAll(1, () => {
       setTimeout(() => {
         getAll(1, (err, res) => {
@@ -233,7 +232,7 @@ describe('cachegoose', () => {
     });
   });
 
-  it('should cache aggregate queries that use callbacks', (done) => {
+  it('should cache aggregate queries that use callbacks', done => {
     aggregate(60, (err, res) => {
       if (err) return done(err);
 
@@ -258,21 +257,6 @@ describe('cachegoose', () => {
 
     const [cached] = await aggregate(60);
     cached.total.should.equal(45);
-  });
-
-  it('should clear a custom cache key', async () => {
-    const res = await getAllCustomKey(60, 'custom-key');
-    res.length.should.equal(10);
-
-    await generate(10);
-
-    const cached = await getAllCustomKey(60, 'custom-key');
-    cached.length.should.equal(10);
-
-    cachegoose.clearCache('custom-key');
-
-    const notCached = await getAllCustomKey(60, 'custom-key');
-    notCached.length.should.equal(20);
   });
 
   it('should cache a count query', async () => {
@@ -354,11 +338,9 @@ describe('cachegoose', () => {
 });
 
 function getAll(ttl, cb) {
-  return Record.find({}).cache(ttl).exec(cb);
-}
-
-function getAllCustomKey(ttl, key, cb) {
-  return Record.find({}).cache(ttl, key).exec(cb);
+  return Record.find({})
+    .cache(ttl)
+    .exec(cb);
 }
 
 function getAllNoCache(cb) {
@@ -366,44 +348,68 @@ function getAllNoCache(cb) {
 }
 
 function getAllLean(ttl, cb) {
-  return Record.find({}).lean().cache(ttl).exec(cb);
+  return Record.find({})
+    .lean()
+    .cache(ttl)
+    .exec(cb);
 }
 
 function getOne(ttl, cb) {
-  return Record.findOne({ num: { $gt: 2 } }).cache(ttl).exec(cb);
+  return Record.findOne({ num: { $gt: 2 } })
+    .cache(ttl)
+    .exec(cb);
 }
 
 function getWithSkip(skip, ttl, cb) {
-  return Record.find({}).skip(skip).cache(ttl).exec(cb);
+  return Record.find({})
+    .skip(skip)
+    .cache(ttl)
+    .exec(cb);
 }
 
 function getWithLimit(limit, ttl, cb) {
-  return Record.find({}).limit(limit).cache(ttl).exec(cb);
+  return Record.find({})
+    .limit(limit)
+    .cache(ttl)
+    .exec(cb);
 }
 
 function getNone(ttl, cb) {
-  return Record.find({ notFound: true }).cache(ttl).exec(cb);
+  return Record.find({ notFound: true })
+    .cache(ttl)
+    .exec(cb);
 }
 
 function getAllWithRegex(ttl, cb) {
-  return Record.find({ str: { $regex: /\d/ } }).cache(ttl).exec(cb);
+  return Record.find({ str: { $regex: /\d/ } })
+    .cache(ttl)
+    .exec(cb);
 }
 
 function getNoneWithRegex(ttl, cb) {
-  return Record.find({ str: { $regex: /\d\d/ } }).cache(ttl).exec(cb);
+  return Record.find({ str: { $regex: /\d\d/ } })
+    .cache(ttl)
+    .exec(cb);
 }
 
 function getWithUnorderedQuery(ttl, cb) {
   getWithUnorderedQuery.flag = !getWithUnorderedQuery.flag;
   if (getWithUnorderedQuery.flag) {
-    return Record.find({ num: { $exists: true }, str: { $exists: true } }).cache(ttl).exec(cb);
+    return Record.find({ num: { $exists: true }, str: { $exists: true } })
+      .cache(ttl)
+      .exec(cb);
   } else {
-    return Record.find({ str: { $exists: true }, num: { $exists: true } }).cache(ttl).exec(cb);
+    return Record.find({ str: { $exists: true }, num: { $exists: true } })
+      .cache(ttl)
+      .exec(cb);
   }
 }
 
 function getAllSorted(sortObj) {
-  return Record.find({}).sort(sortObj).cache(60).exec();
+  return Record.find({})
+    .sort(sortObj)
+    .cache(60)
+    .exec();
 }
 
 function count(ttl, cb) {
