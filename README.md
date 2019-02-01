@@ -2,8 +2,6 @@
 
 #### Mongoose caching that actually works. ####
 
-[![Build Status](https://travis-ci.org/boblauer/cachegoose.svg)](https://travis-ci.org/boblauer/cachegoose)
-
 ## About ##
 
 A Mongoose caching module that works exactly how you would expect it to, with the latest version of Mongoose.
